@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Bike Navigator</string>
+    <string name="action_settings">Settings</string>
+    <string name="huelow">Hue Low Value</string>
+    <string name="huehigh">Hue High Value</string>
+    <string name="satlow">Saturation Low Value</string>
+    <string name="sathigh">Saturation High Value</string>
+    <string name="vallow">Value Low Value</string>
+    <string name="valhigh">Value High Value</string>
+    <string name="preprocessingpreferencecategory">Pre-Processing</string>
+
+</resources>

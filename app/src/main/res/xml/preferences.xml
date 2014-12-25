@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shouldDisableView="true">
+
+    <PreferenceCategory android:title="PreProcessing">
+
+        <CheckBoxPreference
+            android:title="Show Color Threshold Results"
+            android:defaultValue="true"
+            android:summary="turn on or off color thresholding"
+            android:key="colorthreshcheckboxPref"/>
+
+        <PreferenceScreen
+            android:title="Color Threshold Settings"
+            android:summary="Adjust the range of HSV values to find in the image"
+            android:key="colorthreshPrefScreen">
+            <EditTextPreference
+                android:name="HueLowText"
+                android:inputType="number"
+                android:summary="Enter an integer for the hue low value"
+                android:defaultValue="0"
+                android:title="Hue Low Value"
+                android:key="huelowPref"/>
+            <EditTextPreference
+                android:name="HueHighText"
+                android:inputType="number"
+                android:summary="Enter an integer for the hue high value"
+                android:defaultValue="180"
+                android:title="Hue High Value"
+                android:key="huehighPref"/>
+            <EditTextPreference
+                android:name="SatLowText"
+                android:inputType="number"
+                android:summary="Enter an integer for the saturation low value"
+                android:defaultValue="0"
+                android:title="Saturation Low Value"
+                android:key="satlowPref"/>
+            <EditTextPreference
+                android:name="SathighText"
+                android:inputType="number"
+                android:summary="Enter an integer for the saturation high value"
+                android:defaultValue="4"
+                android:title="Saturation High Value"
+                android:key="sathighPref"/>
+            <EditTextPreference
+                android:name="ValLowText"
+                android:inputType="number"
+                android:summary="Enter an integer for the value low value"
+                android:defaultValue="200"
+                android:title="Value Low Value"
+                android:key="vallowPref"/>
+            <EditTextPreference
+                android:name="ValHighText"
+                android:inputType="number"
+                android:summary="Enter an integer for the value high value"
+                android:defaultValue="255"
+                android:title="Value High Value"
+                android:key="valhighPref"/>
+            </PreferenceScreen>
+
+        <CheckBoxPreference
+            android:title="Perform Open Operation"
+            android:defaultValue="false"
+            android:summary="perform open(erode then dilate) on thresholded image"
+            android:key="opencheckbox"/>
+
+        <EditTextPreference
+            android:name="ErodeSize"
+            android:inputType="number"
+            android:summary="Number of pixels to erode"
+            android:defaultValue="2"
+            android:title="Erosion Size"
+            android:key="erosionsize"/>
+
+        <EditTextPreference
+            android:name="DilationSize"
+            android:inputType="number"
+            android:summary="Number of pixels to dilate"
+            android:defaultValue="2"
+            android:title="Dilation Size"
+            android:key="dilationsize"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Line Finding">
+
+        <CheckBoxPreference
+            android:title="Perform Blob Processing"
+            android:defaultValue="true"
+            android:summary="turn on or off blob processing on the preprocessed frame"
+            android:key="blobprocessingcheckbox"/>
+
+        <CheckBoxPreference
+            android:title="Display Bounding Rectangles"
+            android:defaultValue="false"
+            android:summary="display the bounding rectangles on the screen"
+            android:key="boundingrectanglecheckboxPref"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

@@ -1,37 +1,45 @@
 package com.example.williamoverell.bikenavigator;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener2;
+import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceView;
+import android.view.Window;
 import android.view.WindowManager;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.BaseLoaderCallback;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
-public class MainActivity extends Activity implements CvCameraViewListener2, SensorEventListener2{
+public class MainActivity extends Activity implements CvCameraViewListener2{
 
     protected static final String TAG = null;
     private CameraBridgeViewBase mOpenCvCameraView;
 
     LanePreprocessor lanePreprocessor;
+
+    TextView instructionsTextView;
 
     Mat rgbaFrame;
     Mat blobFrame;
@@ -40,13 +48,35 @@ public class MainActivity extends Activity implements CvCameraViewListener2, Sen
     boolean processingSwitch;
     boolean showColorBlobsSwitch;
 
+    int request_Code = 1;
+
+    int img_width;
+    int img_height;
+    int img_skyLine;
+
+    int view_angle;
+    int vertical_view_angle;
+
+    Rect processSection;
+
     SharedPreferences.OnSharedPreferenceChangeListener listener;
 
     @Override
     public void onCameraViewStarted(int width, int height) {
+        img_width = width;
+        img_height = height;
+        img_skyLine = 0; // default value
+        vertical_view_angle = 50; // for Galaxy S3 approx vertical view angle of the rear-facing camera is 50 degrees
+
+        // Toast.makeText(getApplicationContext(), "Running", Toast.LENGTH_LONG).show();
+        // set the sky line
+        calculateSkyLine(view_angle, vertical_view_angle, img_height);
+
         rgbaFrame = new Mat(height, width, CvType.CV_8UC4);
         blobFrame = new Mat(height, width, CvType.CV_8UC4);
         edgeFrame = new Mat(height, width, CvType.CV_8UC4);
+
+        //processSection = new Rect(new Point(0, img_skyLine), new Point(width, height));
 
         lanePreprocessor = new LanePreprocessor();
     }
@@ -61,24 +91,40 @@ public class MainActivity extends Activity implements CvCameraViewListener2, Sen
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         rgbaFrame = inputFrame.rgba();
+
+        // Draw the sky line
+        Core.line(rgbaFrame, new Point(0, img_skyLine), new Point(img_width, img_skyLine), new Scalar(255, 0, 255, 0), 5);
+
+        Mat toProcess = rgbaFrame.submat(processSection);
         if(processingSwitch) {
-            lanePreprocessor.processImage(rgbaFrame,blobFrame);
+            lanePreprocessor.processImage(toProcess,blobFrame);
             if(showColorBlobsSwitch)
                 return blobFrame;
-            lanePreprocessor.findLaneLine(rgbaFrame, rgbaFrame, blobFrame);
+            lanePreprocessor.findLaneLine(toProcess, toProcess, blobFrame);
         }
+            // update the instructions text view
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                instructionsTextView.setText(lanePreprocessor.getInstruction());
+            }
+        });
             return rgbaFrame;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
         setContentView(R.layout.layout_activity_main);
 
         mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.OpenCvView);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
         mOpenCvCameraView.setCvCameraViewListener(this);
+
+        instructionsTextView = (TextView) findViewById(R.id.instructionTextView);
 
         processingSwitch = true;
 
@@ -142,8 +188,21 @@ public class MainActivity extends Activity implements CvCameraViewListener2, Sen
         } else {
             mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
         }
+
+        startActivityForResult(new Intent("com.example.williamoverell.bikenavigator.SetupActivity"), request_Code);
+
     }
 
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if(requestCode == request_Code){
+            if(resultCode == RESULT_OK){
+                // set the view angle from the returned camera angle
+                view_angle = Integer.parseInt(data.getData().toString());
+                // Toast.makeText(getApplicationContext(), Integer.toString(view_angle), Toast.LENGTH_LONG).show();
+            }
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -218,25 +277,23 @@ public class MainActivity extends Activity implements CvCameraViewListener2, Sen
         }
     };
 
-    @Override
-    public void onFlushCompleted(Sensor sensor) {
+    public void calculateSkyLine(int viewangle, int vertangle, int imgheight) {
+        // Calculate the sky line from camera view_angle, vertical_view_angle, and image height
 
-    }
+        // First, if the view angle is larger than half the vertangle then we need to process the entire image
+        if(viewangle > vertangle/2)
+            this.img_skyLine = 0;
+        else {
+            //  Otherwise we need to calculate what percentage of the vertangle is above 0 deg
+            // Then this percentage of the imgheight from the top of the frame is sky
 
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        /*
-        This method will update the region of the frame to process
-        as the pitch of the camera changes.  If the camera is pointing more towards the ground
-        then more of the frame is processed, if pointing more towards the sky then less of the
-        frame is processed.  The idea being that we do not want to look for lane lines in the sky!
-         */
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        /*
-        If accuracy changes
-         */
+            // So first find what degree from 0 the top of the vertical view angle is
+            int highest_View_Angle = vertangle/2 - viewangle;
+            // Now what percentage is this out of the vertangle
+            double percentOfScreen = (double)highest_View_Angle / (double)vertangle;
+            //Toast.makeText(getApplicationContext(), Double.toString(percentOfScreen), Toast.LENGTH_LONG).show();
+            // Then set the skyline to this percent from the top of the image
+            this.img_skyLine = (int) Math.round(percentOfScreen*imgheight);
+        }
     }
 }

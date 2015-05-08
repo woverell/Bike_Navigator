@@ -10,5 +10,7 @@
     <string name="vallow">Value Low Value</string>
     <string name="valhigh">Value High Value</string>
     <string name="preprocessingpreferencecategory">Pre-Processing</string>
+    <string name="title_activity_setup">Setup Activity</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>

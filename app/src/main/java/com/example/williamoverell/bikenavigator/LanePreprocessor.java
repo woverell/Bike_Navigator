@@ -33,6 +33,8 @@ public class LanePreprocessor {
     private int vallow;
     private int valhigh;
 
+    private String instructionString;
+
     boolean performOpenSwitch;
 
     public int getHuelow() {
@@ -88,6 +90,7 @@ public class LanePreprocessor {
         // erosion/dilation defaults
         dilationKernel = Mat.ones(2,2,CvType.CV_8U);
         erosionKernel = Mat.ones(2,2,CvType.CV_8U);
+        performOpenSwitch = false;
 
         // Color threshold defaults
         huelow = 0;
@@ -101,7 +104,6 @@ public class LanePreprocessor {
 
         line = new Mat();
 
-        performOpenSwitch = false;
     }
 
     /**
@@ -211,6 +213,23 @@ public class LanePreprocessor {
         Core.clipLine(boundingRect, pt1, pt2);
         // Draw the line
         Core.line(toDrawOn, pt1, pt2, new Scalar(255,0,0,255), 5);
+
+        setInstructions(vx[0], vy[0]);
+    }
+
+    public void setInstructions(double vx, double vy)
+    {
+        if (vx >= -0.1 && vx <= 0.1) {
+            instructionString = "Go Straight";
+        }else if (vy/vx < -0.1){
+            instructionString = "Go Left";
+        }else if (vy/vx > 0.1){
+            instructionString = "Go Right";
+        }
+    }
+
+    public String getInstruction(){
+        return instructionString;
     }
 
     public void findLines(Mat inputFrame, Mat returnFrame)

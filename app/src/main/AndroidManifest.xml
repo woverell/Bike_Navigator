@@ -19,19 +19,47 @@
     <uses-feature
         android:name="android.hardware.camera.front.autofocus"
         android:required="false" />
+    <uses-feature
+        android:name="android.hardware.SensorEventListener2"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.SensorEventListener"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.Sensor"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.SensorEvent"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.SensorManager"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.GeomagneticField"
+        android:required="false" />
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.DeviceDefault" >
+        android:theme="@android:style/Theme.NoTitleBar.Fullscreen" >
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:screenOrientation="landscape" >
+            android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".SetupActivity"
+            android:label="@string/title_activity_setup"
+            android:screenOrientation="landscape" >
+            <intent-filter>
+                <action android:name="com.example.williamoverell.bikenavigator.SetupActivity"/>
+                <category android:name = "android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
     </application>
